@@ -228,15 +228,16 @@ class PluginEntry : IXposedHookLoadPackage {
         logAlways("Plugin loaded: package=$packageName, moduleVersion=${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         logAlways("Initial config state: logSwitch=$logSwitch, enableAi=$enableAi, clipboardTextSize=$clipboardTextSize")
 
-        // 1. Hook Application#attachBaseContext
+        // 1. Hook ContextWrapper#attachBaseContext to prevent crashes on Samsung Android 16 (OneUI 8.5)
         try {
             findAndHookMethod(
-                Application::class.java,
+                android.content.ContextWrapper::class.java,
                 "attachBaseContext",
                 Context::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         try {
+                            if (param.thisObject !is Application) return
                             val context = param.args.firstOrNull() as? Context ?: return
                             initializeKeyFlux(context, classLoader)
                         } catch (t: Throwable) {
@@ -246,7 +247,7 @@ class PluginEntry : IXposedHookLoadPackage {
                 }
             )
         } catch (t: Throwable) {
-            logAlways("Failed to hook Application#attachBaseContext: ${t.message}")
+            logAlways("Failed to hook ContextWrapper#attachBaseContext: ${t.message}")
         }
 
         // 2. Hook Application#onCreate
