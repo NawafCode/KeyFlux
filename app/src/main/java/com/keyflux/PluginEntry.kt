@@ -228,45 +228,26 @@ class PluginEntry : IXposedHookLoadPackage {
         logAlways("Plugin loaded: package=$packageName, moduleVersion=${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         logAlways("Initial config state: logSwitch=$logSwitch, enableAi=$enableAi, clipboardTextSize=$clipboardTextSize")
 
-        // Hook Application#onCreate for reliable context retrieval on all Android 14+ including Samsung
+        // Based on user feedback, ContextWrapper#attachBaseContext (the first solution) actually worked
+        // successfully for injection, but failed later at getPreferenceScreen. We will use it as the primary hook.
         try {
             XposedHelpers.findAndHookMethod(
-                Application::class.java,
-                "onCreate",
-                object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        try {
-                            val context = param.thisObject as? Context ?: return
-                            initializeKeyFlux(context, classLoader)
-                        } catch (t: Throwable) {
-                            logAlways("Error during Application#onCreate hook execution: ${t.message}")
-                        }
-                    }
-                }
-            )
-        } catch (t: Throwable) {
-            logAlways("Failed to hook Application#onCreate: ${t.message}")
-        }
-
-        // Fallback: Hook Instrumentation#callApplicationOnCreate (Extremely reliable for OEM ROMs)
-        try {
-            XposedHelpers.findAndHookMethod(
-                android.app.Instrumentation::class.java,
-                "callApplicationOnCreate",
-                Application::class.java,
+                android.content.ContextWrapper::class.java,
+                "attachBaseContext",
+                Context::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         try {
                             val context = param.args[0] as? Context ?: return
                             initializeKeyFlux(context, classLoader)
                         } catch (t: Throwable) {
-                            logAlways("Error during Instrumentation hook: ${t.message}")
+                            logAlways("Error during ContextWrapper#attachBaseContext hook execution: ${t.message}")
                         }
                     }
                 }
             )
         } catch (t: Throwable) {
-            logAlways("Failed to hook Instrumentation#callApplicationOnCreate: ${t.message}")
+            logAlways("Failed to hook ContextWrapper#attachBaseContext: ${t.message}")
         }
 
         ClipboardHooker.hook(this, classLoader)
