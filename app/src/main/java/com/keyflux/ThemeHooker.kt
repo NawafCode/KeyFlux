@@ -1,5 +1,6 @@
 package com.keyflux
 
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.content.res.TypedArray
 import de.robv.android.xposed.XC_MethodHook
@@ -21,6 +22,8 @@ object ThemeHooker {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         if (!enableAmoled) return
                         val res = param.thisObject as? Resources ?: return
+                        val isDarkMode = (res.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+                        if (!isDarkMode) return
                         val id = param.args[0] as Int
                         val result = param.result as Int
                         overrideColor(res, id, result)?.let { param.result = it }
@@ -40,6 +43,8 @@ object ThemeHooker {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         if (!enableAmoled) return
                         val res = param.thisObject as? Resources ?: return
+                        val isDarkMode = (res.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+                        if (!isDarkMode) return
                         val id = param.args[0] as Int
                         val result = param.result as Int
                         overrideColor(res, id, result)?.let { param.result = it }
@@ -64,6 +69,8 @@ object ThemeHooker {
                         val colorId = typedArray.getResourceId(index, 0)
                         if (colorId != 0) {
                             val res = typedArray.resources ?: return
+                            val isDarkMode = (res.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+                            if (!isDarkMode) return
                             overrideColor(res, colorId, result)?.let { param.result = it }
                         }
                     }
