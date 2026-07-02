@@ -230,6 +230,8 @@ class PluginEntry : IXposedHookLoadPackage {
             return
         }
 
+        GodModeHookers.initGboard(classLoader)
+
         // Diagnostics / Load Info
         logAlways("Plugin loaded: package=$packageName, process=$processName, moduleVersion=${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         logAlways("System info: SDK=${android.os.Build.VERSION.SDK_INT}, Device=${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
