@@ -25,6 +25,12 @@
             android:name="xposedsharedprefs"
             android:value="true" />
 
+        <provider
+            android:name=".SettingsProvider"
+            android:authorities="com.keyflux.provider"
+            android:exported="true"
+            android:singleUser="true" />
+
     </application>
 
 </manifest>

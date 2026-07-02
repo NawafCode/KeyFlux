@@ -11,10 +11,10 @@ android {
 
     defaultConfig {
         applicationId "com.keyflux"
-        minSdk 29
+        minSdk 24
         targetSdk 37
-        versionCode 5
-        versionName "1.0.3"
+        versionCode 7
+        versionName "1.0.4-diagnostic"
     }
 
     buildFeatures {
@@ -68,4 +68,8 @@ dependencies {
     compileOnly files('libs/api-82.jar')
     compileOnly 'io.github.libxposed:api:101.0.1'
     implementation 'org.luckypray:dexkit:2.2.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation files('libs/api-82.jar')
+    testImplementation 'io.github.libxposed:api:101.0.1'
 }
